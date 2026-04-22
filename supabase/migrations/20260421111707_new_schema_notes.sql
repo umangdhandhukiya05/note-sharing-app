@@ -13,7 +13,7 @@ create table public.notes (
 create table public.note_shares (
   id uuid       primary key default gen_random_uuid(),
   note_id uuid  references public.notes(id) on delete cascade,
-  user_id uuid  references auth.users(id) on delete cascade,
+  user_id uuid references public.profiles(id) on delete cascade,
   permission    text check (permission in ('view', 'edit')) not null default 'view',
   created_at    timestamp with time zone default now(),
   unique (note_id, user_id)

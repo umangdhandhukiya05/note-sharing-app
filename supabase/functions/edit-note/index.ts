@@ -4,8 +4,6 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js";
 serve(async (req) => {
   const authHeader = req.headers.get("Authorization");
 
-  const { title, content } = await req.json();
-
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_ANON_KEY")!,
@@ -18,23 +16,20 @@ serve(async (req) => {
     },
   );
 
-  const token = authHeader.replace("Bearer ", "");
+  const { id, title, content } = await req.json();
+  console.log(id)
 
-  const { data: userData } = await supabase.auth.getUser(token);
-
-  if (!userData.user) {
-    return new Response("Unauthorized", { status: 401 });
-  }
-
-  const { error } = await supabase.from("notes").insert({
-    title: title || "Untitled",
-    content: content || "",
-    owner_id: userData.user.id,
-  });
+  const { data, error } = await supabase
+    .from("notes")
+    .update({ title, content })
+    .eq("id", id);
 
   if (error) {
     return new Response(error.message, { status: 400 });
   }
 
-  return new Response("Note created", { status: 200 });
+  return new Response("Note Updated successfully", {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
 });

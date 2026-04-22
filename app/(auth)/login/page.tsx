@@ -25,7 +25,6 @@ const Login = () => {
       message.error(error.message);
       return;
     }
-
     router.push("/");
   };
 

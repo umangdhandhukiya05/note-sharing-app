@@ -5,13 +5,14 @@ import { Row } from "antd";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
 import { useNotes } from "@/hooks/useNotes";
-import { DashboardHeader } from "@/components/DashboardHeader";
-import { NoteCard } from "@/components/NoteCard";
-import { CreateNoteModal } from "@/components/CreateNoteModal";
+import { DashboardHeader } from "@/components/layout/DashboardHeader";
+import { NoteCard } from "@/components/notes/NoteCard";
+import { CreateNoteModal } from "@/components/notes/CreateNoteModal";
 
 export default function Dashboard() {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
 
   const router = useRouter();
   const { notes, fetchNotes, createNote } = useNotes();
@@ -34,11 +35,12 @@ export default function Dashboard() {
 
   const openModal = () => {
     setTitle("");
+    setContent("");
     setOpen(true);
   };
 
   const handleCreateNote = () => {
-    createNote(title, () => setOpen(false));
+    createNote(title, content, () => setOpen(false));
   };
 
   return (
@@ -54,8 +56,10 @@ export default function Dashboard() {
       <CreateNoteModal
         open={open}
         title={title}
+        content={content}
         onCancel={() => setOpen(false)}
         onOk={handleCreateNote}
+        onContentChange={setContent}
         onTitleChange={setTitle}
       />
     </div>

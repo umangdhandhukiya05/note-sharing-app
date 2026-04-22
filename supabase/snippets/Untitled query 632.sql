@@ -1,0 +1,1 @@
+select * from note_shares where note_id = '6492b2e7-d658-4d74-8ba1-6446bc71f5b1';
