@@ -1,42 +1,50 @@
 import { Modal, Input } from "antd";
+import { useState, useEffect } from "react";
 
 interface EditModalProps {
   editOpen: boolean;
-  NewTitle: string;
-  NewContent: string;
+  initialTitle: string;
+  initialContent: string;
   onCancel: () => void;
-  onOk: (value: any) => void;
-  onTitleChange: (value: string) => void;
-  onContentChange: (value: string) => void;
+  onOk: (title: string, content: string) => void;
 }
 
 export function EditNoteModal({
   editOpen,
-  NewTitle,
-  NewContent,
+  initialTitle,
+  initialContent,
   onCancel,
   onOk,
-  onTitleChange,
-  onContentChange,
 }: EditModalProps) {
+  const [title, setTitle] = useState(initialTitle);
+  const [content, setContent] = useState(initialContent);
+
+  useEffect(() => {
+    if (editOpen) {
+      setTitle(initialTitle);
+      setContent(initialContent);
+    }
+  }, [editOpen, initialTitle, initialContent]);
+
   return (
     <Modal
       title="Update Note"
       open={editOpen}
       onCancel={onCancel}
-      onOk={onOk}
+      onOk={() => onOk(title, content)}
       okText="Update"
     >
       <Input
         placeholder="Enter note title"
-        value={NewTitle}
-        onChange={(e) => onTitleChange(e.target.value)}
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
       />
-      <Input
-        style={{ marginTop: "8px" }}
+      <Input.TextArea
+        rows={10}
+        style={{ marginTop: "8px", resize: "none" }}
         placeholder="Enter note content"
-        value={NewContent}
-        onChange={(e) => onContentChange(e.target.value)}
+        value={content}
+        onChange={(e) => setContent(e.target.value)}
       />
     </Modal>
   );

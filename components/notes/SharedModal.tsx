@@ -1,4 +1,4 @@
-import { Button, Modal, Select } from "antd";
+import { Modal, Select } from "antd";
 import { useEffect, useState } from "react";
 import { api } from "@/utils/api";
 
@@ -11,19 +11,25 @@ type User = {
 type SharedModalProps = {
   open: boolean;
   onCancel: () => void;
+  onSuccess?: () => void;
   noteId: string;
+  currentUser: User;
 };
 
-export function SharedModal({ open, onCancel, noteId }: SharedModalProps) {
+export function SharedModal({
+  open,
+  onCancel,
+  onSuccess,
+  noteId,
+  currentUser,
+}: SharedModalProps) {
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<string>();
   const [permission, setPermission] = useState("view");
-  const [sharedUsers, setSharedUsers] = useState<any[]>([]);
 
   useEffect(() => {
     if (open) {
       fetchUsers();
-      fetchSharedUsers();
     }
   }, [open]);
 
@@ -41,13 +47,13 @@ export function SharedModal({ open, onCancel, noteId }: SharedModalProps) {
       permission,
     });
 
+    if (onSuccess) {
+      onSuccess();
+    }
     onCancel();
   };
 
-  const fetchSharedUsers = async () => {
-    const res = await api.post("get-shared-user", { note_id: noteId });
-    setSharedUsers(res.data);
-  };
+  const filteredUser = users.filter((user) => user.id !== currentUser.id);
 
   return (
     <Modal
@@ -62,7 +68,7 @@ export function SharedModal({ open, onCancel, noteId }: SharedModalProps) {
         style={{ width: "100%" }}
         value={selectedUser}
         onChange={setSelectedUser}
-        options={users.map((user) => ({
+        options={filteredUser.map((user) => ({
           label: `${user.display_name || "No Name"} (${user.email})`,
           value: user.id,
         }))}
@@ -77,55 +83,6 @@ export function SharedModal({ open, onCancel, noteId }: SharedModalProps) {
           { label: "Edit", value: "edit" },
         ]}
       />
-
-      <div style={{ marginTop: 20 }}>
-        {sharedUsers.map((share) => (
-          <div
-            key={share.id}
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              marginBottom: 10,
-            }}
-          >
-            <span>
-              {share.user.display_name} ({share.user.email})
-            </span>
-
-            <div style={{ display: "flex", gap: 10 }}>
-              <Select
-                value={share.permission}
-                onChange={(value) =>
-                  api
-                    .post("update-share", {
-                      share_id: share.id,
-                      permission: value,
-                    })
-                    .then(fetchSharedUsers)
-                }
-                options={[
-                  { label: "View", value: "view" },
-                  { label: "Edit", value: "edit" },
-                ]}
-                style={{ width: 100 }}
-              />
-
-              <Button
-                danger
-                onClick={() =>
-                  api
-                    .post("remove-share", {
-                      share_id: share.id,
-                    })
-                    .then(fetchSharedUsers)
-                }
-              >
-                Remove
-              </Button>
-            </div>
-          </div>
-        ))}
-      </div>
     </Modal>
   );
 }

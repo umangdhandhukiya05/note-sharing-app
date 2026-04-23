@@ -1,9 +1,6 @@
 -- Enable RLS for note_shares (notes already enabled in previous migration)
 alter table public.note_shares enable row level security;
 
--- 1. Create helper functions to securely check permissions WITHOUT triggering recursive RLS loops
--- Using SECURITY DEFINER bypasses RLS on the underlying queries and prevents "infinite recursion detected in policy"
-
 -- Function to check if the current user is the owner of a given note
 create or replace function public.is_note_owner(check_note_id uuid)
 returns boolean
@@ -31,7 +28,7 @@ as $$
   );
 $$;
 
--- 2. Drop existing policies (clean state for production policies)
+-- Drop existing policies (clean state for production policies)
 drop policy if exists "owner full access" on public.notes;
 drop policy if exists "public read" on public.notes;
 drop policy if exists "shared view" on public.notes;
@@ -42,7 +39,7 @@ drop policy if exists "owner can share" on public.note_shares;
 drop policy if exists "owner can delete share" on public.note_shares;
 drop policy if exists "owner update share" on public.note_shares;
 
--- 3. Production policies for `notes`
+-- Production policies for `notes`
 create policy "Notes are viewable by owner, shared users, or if public"
 on public.notes for select
 using (
@@ -70,7 +67,7 @@ using (
   owner_id = auth.uid()
 );
 
--- 4. Production policies for `note_shares`
+-- Production policies for `note_shares`
 create policy "Users can view their own shares or shares of their notes"
 on public.note_shares for select
 using (
@@ -100,7 +97,7 @@ using (
   OR user_id = auth.uid()
 );
 
--- 5. Enable real-time replication for both tables
+-- Enable real-time replication for both tables
 -- REPLICA IDENTITY FULL ensures DELETE and UPDATE events send all previous data to clients
 alter table public.notes replica identity full;
 alter table public.note_shares replica identity full;

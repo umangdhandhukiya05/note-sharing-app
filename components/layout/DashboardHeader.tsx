@@ -41,26 +41,23 @@ export function DashboardHeader({ onOpenModal }: DashboardHeaderProps) {
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        marginBottom: 20,
-        alignItems: "center",
-      }}
-    >
+    <div className="px-6 flex justify-between mb-5 items-center bg-black text-white">
       <div className="flex flex-col">
-        <h2 className="text-2xl font-bold">Shared-Notes</h2>
+        <h2 className="logo">Shared-Notes</h2>
         <span className="text-lg font-semibold">
           Welcome,{" "}
-          <span style={{ color: "orange" }}>{username.toUpperCase()} !</span>
+          <span>{username.toUpperCase()} !</span>
         </span>
       </div>
 
-      <div style={{ display: "flex", gap: 15, alignItems: "center" }}>
+      <div className="flex gap-4 items-center">
         <Button onClick={handleLogout}>Logout</Button>
 
-        <Button type="primary" icon={<PlusOutlined />} onClick={onOpenModal}>
+        <Button
+          style={{ backgroundColor: "white", color: "black" }}
+          icon={<PlusOutlined />}
+          onClick={onOpenModal}
+        >
           New Note
         </Button>
       </div>

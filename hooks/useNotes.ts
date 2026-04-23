@@ -1,11 +1,27 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { message } from "antd";
 import { api } from "@/utils/api";
 import { Note } from "@/types";
+import { supabase } from "@/utils/supabase/client";
 
 export const useNotes = () => {
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(false);
+  // Realtime subscription reference
+  useEffect(() => {
+    // Subscribe to notes table changes
+    const channel = supabase.channel('public:notes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notes' }, (payload) => {
+        // Refetch notes on any change
+        fetchNotes();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchNotes = useCallback(async () => {
     setLoading(true);

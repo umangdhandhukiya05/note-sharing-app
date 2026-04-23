@@ -500,3 +500,36 @@ entrypoint = "./functions/remove-share/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/remove-share/*.html" ]
+
+[functions.fetch-single-note]
+enabled = true
+verify_jwt = true
+import_map = "./functions/fetch-single-note/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/fetch-single-note/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/fetch-single-note/*.html" ]
+
+[functions.fetch_versions]
+enabled = true
+verify_jwt = true
+import_map = "./functions/fetch_versions/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/fetch_versions/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/fetch_versions/*.html" ]
+
+[functions.restor-version]
+enabled = true
+verify_jwt = true
+import_map = "./functions/restor-version/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/restor-version/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/restor-version/*.html" ]
