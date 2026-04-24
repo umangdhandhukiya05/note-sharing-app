@@ -1,9 +1,15 @@
 import { serve } from "https://deno.land/std/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js";
+import { handleCorsPreflight, withCors } from "../_shared/cors.ts";
 
 serve(async (req) => {
+  const preflight = handleCorsPreflight(req);
+  if (preflight) {
+    return preflight;
+  }
+
   const authHeader = req.headers.get("Authorization");
-  if (!authHeader) return new Response("Unauthorized", { status: 401 });
+  if (!authHeader) return withCors(req, { status: 401 }, "Unauthorized");
 
   const { share_id, permission } = await req.json();
 
@@ -20,7 +26,7 @@ serve(async (req) => {
     .update({ permission })
     .eq("id", share_id);
 
-  if (error) return new Response(error.message, { status: 400 });
+  if (error) return withCors(req, { status: 400 }, error.message);
 
-  return new Response("Updated", { status: 200 });
+  return withCors(req, { status: 200 }, "Updated");
 });

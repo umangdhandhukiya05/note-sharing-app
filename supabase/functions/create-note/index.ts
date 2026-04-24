@@ -1,7 +1,13 @@
 import { serve } from "https://deno.land/std/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js";
+import { handleCorsPreflight, withCors } from "../_shared/cors.ts";
 
 serve(async (req) => {
+  const preflight = handleCorsPreflight(req);
+  if (preflight) {
+    return preflight;
+  }
+
   const authHeader = req.headers.get("Authorization");
 
   const { title, content } = await req.json();
@@ -23,7 +29,7 @@ serve(async (req) => {
   const { data: userData } = await supabase.auth.getUser(token);
 
   if (!userData.user) {
-    return new Response("Unauthorized", { status: 401 });
+    return withCors(req, { status: 401 }, "Unauthorized");
   }
 
   const { error } = await supabase.from("notes").insert({
@@ -33,8 +39,8 @@ serve(async (req) => {
   });
 
   if (error) {
-    return new Response(error.message, { status: 400 });
+    return withCors(req, { status: 400 }, error.message);
   }
 
-  return new Response("Note created", { status: 200 });
+  return withCors(req, { status: 200 }, "Note created");
 });

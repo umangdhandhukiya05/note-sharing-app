@@ -1,7 +1,13 @@
 import { serve } from "https://deno.land/std/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js";
+import { handleCorsPreflight, withCors } from "../_shared/cors.ts";
 
 serve(async (req) => {
+  const preflight = handleCorsPreflight(req);
+  if (preflight) {
+    return preflight;
+  }
+
   const url = new URL(req.url);
   const note_id = url.searchParams.get("note_id");
 
@@ -24,8 +30,11 @@ serve(async (req) => {
     .order("created_at", { ascending: false });
 
   if (error) {
-    return new Response(error.message, { status: 400 });
+    return withCors(req, { status: 400 }, error.message);
   }
 
-  return new Response(JSON.stringify(data), { status: 200 });
+  return withCors(req, {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  }, JSON.stringify(data));
 });

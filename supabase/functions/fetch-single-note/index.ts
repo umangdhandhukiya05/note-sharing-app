@@ -1,7 +1,13 @@
 import { serve } from "https://deno.land/std/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js";
+import { handleCorsPreflight, withCors } from "../_shared/cors.ts";
 
 serve(async (req) => {
+  const preflight = handleCorsPreflight(req);
+  if (preflight) {
+    return preflight;
+  }
+
   const authHeader = req.headers.get("Authorization");
 
   const url = new URL(req.url);
@@ -26,7 +32,7 @@ serve(async (req) => {
     .single();
 
   if (error) {
-    return new Response(error.message, { status: 400 });
+    return withCors(req, { status: 400 }, error.message);
   }
 
   // Fetch the owner's profile to get their display_name
@@ -42,8 +48,8 @@ serve(async (req) => {
     }
   }
 
-  return new Response(JSON.stringify(data), {
+  return withCors(req, {
     status: 200,
     headers: { "Content-Type": "application/json" },
-  });
+  }, JSON.stringify(data));
 });

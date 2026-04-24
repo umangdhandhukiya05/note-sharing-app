@@ -1,7 +1,13 @@
 import { serve } from "https://deno.land/std/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js";
+import { handleCorsPreflight, withCors } from "../_shared/cors.ts";
 
 serve(async (req) => {
+  const preflight = handleCorsPreflight(req);
+  if (preflight) {
+    return preflight;
+  }
+
   const authHeader = req.headers.get("Authorization");
 
   const supabase = createClient(
@@ -25,11 +31,11 @@ serve(async (req) => {
     .eq("id", id);
 
   if (error) {
-    return new Response(error.message, { status: 400 });
+    return withCors(req, { status: 400 }, error.message);
   }
 
-  return new Response("Note Updated successfully", {
+  return withCors(req, {
     status: 200,
     headers: { "Content-Type": "application/json" },
-  });
+  }, "Note Updated successfully");
 });
