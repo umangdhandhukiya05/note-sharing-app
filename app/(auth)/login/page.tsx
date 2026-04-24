@@ -9,6 +9,8 @@ type authValues = {
   password: string;
 };
 
+import Link from "next/link";
+
 const Login = () => {
   const router = useRouter();
 
@@ -21,11 +23,11 @@ const Login = () => {
     });
 
     if (error) {
-      console.log(error.message);
       message.error(error.message);
       return;
     }
-    router.push("/");
+    message.success("Login successfully");
+    router.replace("/");
   };
 
   return (
@@ -46,9 +48,28 @@ const Login = () => {
             <Input.Password />
           </Form.Item>
 
-          <Button type="primary" htmlType="submit" block>
+          <Button
+            type="primary"
+            htmlType="submit"
+            block
+            style={{
+              background: "black",
+              borderColor: "black",
+              color: "white",
+            }}
+          >
             Login
           </Button>
+
+          <div style={{ marginTop: 16, textAlign: "center" }}>
+            Don't have an account?{" "}
+            <Link
+              href="/register"
+              style={{ color: "black", fontWeight: "bold" }}
+            >
+              Register
+            </Link>
+          </div>
         </Form>
       </Card>
     </div>

@@ -8,12 +8,14 @@ import { DashboardHeader } from "@/components/layout/DashboardHeader";
 import { NoteCard } from "@/components/notes/NoteCard";
 import { CreateNoteModal } from "@/components/notes/CreateNoteModal";
 import Link from "next/link";
+import { Empty } from "antd";
+import type { User as AuthUser } from "@supabase/supabase-js";
 
 export default function Dashboard() {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [currentUser, setcurrentUser] = useState<any>();
+  const [currentUser, setcurrentUser] = useState<AuthUser | null>(null);
 
   const router = useRouter();
   const { notes, fetchNotes, createNote } = useNotes();
@@ -23,16 +25,19 @@ export default function Dashboard() {
 
   useEffect(() => {
     checkUser();
-    // Subscribe to notes changes for dashboard
-    const channel = supabase.channel('public:notes-dashboard')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'notes' }, (payload) => {
-        fetchNotes();
-      })
+    const channel = supabase
+      .channel("public:notes-dashboard")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "notes" },
+        (payload) => {
+          fetchNotes();
+        },
+      )
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const checkUser = async () => {
@@ -56,8 +61,6 @@ export default function Dashboard() {
     createNote(title, content, () => setOpen(false));
   };
 
-
-
   return (
     <div>
       <DashboardHeader onOpenModal={openModal} />
@@ -69,24 +72,36 @@ export default function Dashboard() {
             <h1 className="text-xl">My Notes</h1>
           </div>
           <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mb-3">
-            {myNotes.map((note) => (
-              <Link key={note.id} href={`/note/${note.id}`}>
-                <NoteCard note={note} />
-              </Link>
-            ))}
+            {myNotes.length > 0 ? (
+              myNotes.map((note) => (
+                <Link key={note.id} href={`/note/${note.id}`}>
+                  <NoteCard note={note} />
+                </Link>
+              ))
+            ) : (
+              <div className="col-span-full pt-6 pb-4">
+                <Empty description="No notes" />
+              </div>
+            )}
           </div>
         </div>
         <div>
           <div className="flex gap-2 items-center mb-3">
             <div className="h-7 w-7 bg-black rounded-tr-full rounded-br-full"></div>
-            <h1 className="text-xl">Notes</h1>
+            <h1 className="text-xl">Collobrative Notes</h1>
           </div>
           <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 ">
-            {shareWithMe.map((note) => (
-              <Link key={note.id} href={`/note/${note.id}`}>
-                <NoteCard note={note} />
-              </Link>
-            ))}
+            {shareWithMe.length > 0 ? (
+              shareWithMe.map((note) => (
+                <Link key={note.id} href={`/note/${note.id}`}>
+                  <NoteCard note={note} />
+                </Link>
+              ))
+            ) : (
+              <div className="col-span-full pt-6 pb-4">
+                <Empty description="No notes" />
+              </div>
+            )}
           </div>
         </div>
       </div>

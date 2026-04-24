@@ -1,4 +1,4 @@
-import { Modal, Select } from "antd";
+import { message, Modal, Select } from "antd";
 import { useEffect, useState } from "react";
 import { api } from "@/utils/api";
 
@@ -13,7 +13,7 @@ type SharedModalProps = {
   onCancel: () => void;
   onSuccess?: () => void;
   noteId: string;
-  currentUser: User;
+  currentUser: { id: string } | null;
 };
 
 export function SharedModal({
@@ -48,12 +48,15 @@ export function SharedModal({
     });
 
     if (onSuccess) {
+      message.success("Note shared to user");
       onSuccess();
     }
     onCancel();
   };
 
-  const filteredUser = users.filter((user) => user.id !== currentUser.id);
+  const filteredUser = currentUser
+    ? users.filter((user) => user.id !== currentUser.id)
+    : users;
 
   return (
     <Modal
@@ -61,6 +64,12 @@ export function SharedModal({
       onOk={handleShare}
       onCancel={onCancel}
       title="Share Note"
+      cancelButtonProps={{
+        style: { background: "black", borderColor: "black", color: "white" },
+      }}
+      okButtonProps={{
+        style: { background: "black", borderColor: "black", color: "white" },
+      }}
     >
       <Select
         showSearch

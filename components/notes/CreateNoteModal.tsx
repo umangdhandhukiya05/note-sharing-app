@@ -26,6 +26,12 @@ export function CreateNoteModal({
       onCancel={onCancel}
       onOk={onOk}
       okText="Create"
+      cancelButtonProps={{
+        style: { background: "black", borderColor: "black", color: "white" },
+      }}
+      okButtonProps={{
+        style: { background: "black", borderColor: "black", color: "white" },
+      }}
     >
       <Input
         placeholder="Enter note title"

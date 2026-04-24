@@ -1,10 +1,18 @@
 import { Note } from "@/types";
+import type { Tables } from "@/types/supabase";
 import { api } from "@/utils/api";
 import { message } from "antd";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useNotes } from "@/hooks/useNotes";
 import { supabase } from "@/utils/supabase/client";
+import type { User } from "@supabase/supabase-js";
+
+type NoteVersion = Tables<"note_versions">;
+
+type SharedUser = Tables<"note_shares"> & {
+  user: Pick<Tables<"profiles">, "id" | "email" | "display_name">;
+};
 
 export const useDetails = (id: string) => {
   const router = useRouter();
@@ -14,10 +22,10 @@ export const useDetails = (id: string) => {
   const [editOpen, setEditOpen] = useState(false);
 
   const [isShare, setIsShare] = useState(false);
-  const [sharedUsers, setSharedUsers] = useState<any[]>([]);
+  const [sharedUsers, setSharedUsers] = useState<SharedUser[]>([]);
 
-  const [currentUser, setCurrentUser] = useState<any>();
-  const [versions, setVersions] = useState<any[]>();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [versions, setVersions] = useState<NoteVersion[]>([]);
 
   const checkUser = async () => {
     const { data } = await supabase.auth.getUser();
@@ -30,14 +38,15 @@ export const useDetails = (id: string) => {
 
   const fetchVersion = async () => {
     try {
-      const res = await api.get(`fetch_versions?note_id=${id}`);
+      const res = await api.get<NoteVersion[]>(`fetch_versions?note_id=${id}`);
       setVersions(res.data);
     } catch (error) {
       console.error(error);
+      message.error("Error while versions");
     }
   };
 
-  const restore = async (version_id: any) => {
+  const restore = async (version_id: string) => {
     try {
       await api.post("restor-version", { version_id: version_id });
       fetchSingleNote(id);
@@ -50,7 +59,7 @@ export const useDetails = (id: string) => {
 
   const fetchSingleNote = async (noteId: string) => {
     try {
-      const res = await api.get(`fetch-single-note?id=${noteId}`);
+      const res = await api.get<Note>(`fetch-single-note?id=${noteId}`);
 
       if (res.status !== 200) {
         throw new Error("Failed");
@@ -63,7 +72,9 @@ export const useDetails = (id: string) => {
 
   const fetchSharedUsers = async () => {
     try {
-      const res = await api.post("get-shared-user", { note_id: id });
+      const res = await api.post<SharedUser[]>("get-shared-user", {
+        note_id: id,
+      });
       setSharedUsers(res.data);
     } catch (error) {
       console.error(error);
@@ -78,19 +89,37 @@ export const useDetails = (id: string) => {
       fetchSharedUsers();
       fetchVersion();
 
-      // Subscribe to changes for this note
-      const noteChannel = supabase.channel(`public:notes:${id}`)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'notes', filter: `id=eq.${id}` }, (payload) => {
-          fetchSingleNote(id);
-          fetchVersion();
-        })
+      const noteChannel = supabase
+        .channel(`public:notes:${id}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "notes",
+            filter: `id=eq.${id}`,
+          },
+          (payload) => {
+            fetchSingleNote(id);
+            fetchVersion();
+          },
+        )
         .subscribe();
 
-      // Subscribe to changes for shares of this note
-      const shareChannel = supabase.channel(`public:note_shares:${id}`)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'note_shares', filter: `note_id=eq.${id}` }, (payload) => {
-          fetchSharedUsers();
-        })
+      const shareChannel = supabase
+        .channel(`public:note_shares:${id}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "note_shares",
+            filter: `note_id=eq.${id}`,
+          },
+          (payload) => {
+            fetchSharedUsers();
+          },
+        )
         .subscribe();
 
       return () => {
@@ -98,12 +127,11 @@ export const useDetails = (id: string) => {
         supabase.removeChannel(shareChannel);
       };
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const handleDeleteNote = () => {
     deleteNote(id);
-    router.push("/");
+    router.replace("/");
   };
 
   const handleEditNote = async (
@@ -121,12 +149,22 @@ export const useDetails = (id: string) => {
   };
 
   const updateShare = async (share_id: string, permission: string) => {
-    await api.post("update-share", { share_id, permission });
+    try {
+      await api.post("update-share", { share_id, permission });
+    } catch (error) {
+      message.error("Failed to update");
+    }
+    message.success("Permission updated");
     fetchSharedUsers();
   };
 
   const removeShare = async (share_id: string) => {
-    await api.post("remove-share", { share_id });
+    try {
+      await api.post("remove-share", { share_id });
+    } catch (error) {
+      message.error("Failed to remove");
+    }
+    message.success("Remove user access from note");
     fetchSharedUsers();
   };
 

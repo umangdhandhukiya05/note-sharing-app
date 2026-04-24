@@ -33,6 +33,12 @@ export function EditNoteModal({
       onCancel={onCancel}
       onOk={() => onOk(title, content)}
       okText="Update"
+      cancelButtonProps={{
+        style: { background: "black", borderColor: "black", color: "white" },
+      }}
+      okButtonProps={{
+        style: { background: "black", borderColor: "black", color: "white" },
+      }}
     >
       <Input
         placeholder="Enter note title"

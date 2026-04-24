@@ -9,6 +9,8 @@ type authValues = {
   password: string;
 };
 
+import Link from "next/link";
+
 const Register = () => {
   const router = useRouter();
 
@@ -48,9 +50,13 @@ const Register = () => {
             <Input.Password />
           </Form.Item>
 
-          <Button type="primary" htmlType="submit" block>
+          <Button type="primary" htmlType="submit" block style={{ background: "black", borderColor: "black", color: "white" }}>
             Register
           </Button>
+
+          <div style={{ marginTop: 16, textAlign: "center" }}>
+            Already have an account? <Link href="/login" style={{ color: "black", fontWeight: "bold" }}>Login</Link>
+          </div>
         </Form>
       </Card>
     </div>

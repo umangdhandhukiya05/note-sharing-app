@@ -4,4 +4,5 @@ export interface Note {
   content: string;
   owner_id: string;
   is_public: boolean;
+  display_name: string;
 }

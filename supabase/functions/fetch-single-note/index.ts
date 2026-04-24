@@ -19,10 +19,27 @@ serve(async (req) => {
     },
   );
 
-  const { data, error } = await supabase.from("notes").select().eq("id", id).single();
+  const { data, error } = await supabase
+    .from("notes")
+    .select()
+    .eq("id", id)
+    .single();
 
   if (error) {
     return new Response(error.message, { status: 400 });
+  }
+
+  // Fetch the owner's profile to get their display_name
+  if (data?.owner_id) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("display_name")
+      .eq("id", data.owner_id)
+      .single();
+
+    if (profile) {
+      data.display_name = profile.display_name;
+    }
   }
 
   return new Response(JSON.stringify(data), {

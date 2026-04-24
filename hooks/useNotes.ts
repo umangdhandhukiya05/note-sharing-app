@@ -7,20 +7,23 @@ import { supabase } from "@/utils/supabase/client";
 export const useNotes = () => {
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(false);
-  // Realtime subscription reference
+
+  //realtime
   useEffect(() => {
-    // Subscribe to notes table changes
-    const channel = supabase.channel('public:notes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'notes' }, (payload) => {
-        // Refetch notes on any change
-        fetchNotes();
-      })
+    const channel = supabase
+      .channel("public:notes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "notes" },
+        (payload) => {
+          fetchNotes();
+        },
+      )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchNotes = useCallback(async () => {
@@ -32,9 +35,8 @@ export const useNotes = () => {
         throw new Error("Failed to Fetch");
       }
       setNotes(res.data);
-    } catch (error) {
-      console.log(error);
-      message.error("Failed to fetch note");
+    } catch (e) {
+      message.error("Failed to fetch");
     }
     setLoading(false);
   }, []);
@@ -49,7 +51,7 @@ export const useNotes = () => {
       if (res.status !== 200 && res.status !== 201) {
         throw new Error("Failed");
       }
-      message.success("Created");
+      message.success("Note created");
       await fetchNotes();
       if (onSuccess) onSuccess();
     } catch (error) {
@@ -63,7 +65,7 @@ export const useNotes = () => {
       if (res.status !== 200 && res.status !== 201) {
         throw new Error("Failed");
       }
-      message.success("delete successfully");
+      message.success("Note deleted");
     } catch (error) {
       message.error("Failed to delete note");
     }
@@ -75,7 +77,7 @@ export const useNotes = () => {
       if (res.status !== 200 && res.status !== 201) {
         throw new Error("Failed");
       }
-      message.success("Updated");
+      message.success("Note Updated");
     } catch (error) {
       message.error("Failed to Update note");
     }
