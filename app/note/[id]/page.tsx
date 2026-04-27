@@ -37,6 +37,7 @@ const NoteDetail = () => {
     removeShare,
     restore,
     fetchSharedUsers,
+    isLoading,
   } = useDetails(id);
 
   useEffect(() => {
@@ -83,6 +84,7 @@ const NoteDetail = () => {
         editOpen={editOpen}
         initialTitle={note?.title || ""}
         initialContent={note?.content || ""}
+        isLoading={isLoading}
         onOk={handleEditNote}
         onCancel={() => setEditOpen(false)}
       />
@@ -164,13 +166,14 @@ const NoteDetail = () => {
                   extra={
                     <Button
                       style={{
-                        backgroundColor: "black",
+                        backgroundColor: isLoading ? "#d9d9d9" : "black",
                         color: "white",
                         fontSize: "18px",
                       }}
                       shape="circle"
                       icon={<ShareAltOutlined />}
                       onClick={() => setIsShare(true)}
+                      disabled={isLoading}
                     />
                   }
                 >
@@ -183,14 +186,13 @@ const NoteDetail = () => {
                       {sharedUsers.map((share) => (
                         <div
                           key={share.id}
-                          className="flex justify-between items-center gap-2"
+                          className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center gap-2"
                         >
-                          <div className="text-sm font-medium text-gray-800 flex flex-col">
-                            <h1>{share.user.display_name}</h1>
-                            <h1>{share.user.email}</h1>
+                          <div className="text-sm font-medium text-gray-800 flex flex-col truncate w-full sm:w-auto">
+                            <h1 className="truncate">{share.user.display_name}</h1>
                           </div>
 
-                          <div className="flex items-center gap-2 mt-1">
+                          <div className="flex items-center gap-2 mt-1 sm:mt-0 w-full sm:w-auto sm:justify-end">
                             <Select
                               value={share.permission}
                               onChange={(value) => updateShare(share.id, value)}
@@ -198,8 +200,9 @@ const NoteDetail = () => {
                                 { label: "View", value: "view" },
                                 { label: "Edit", value: "edit" },
                               ]}
-                              className="w-24"
+                              className="flex-1 sm:flex-none sm:w-24"
                               size="small"
+                              disabled={isLoading}
                             />
 
                             <Button
@@ -207,6 +210,7 @@ const NoteDetail = () => {
                               size="small"
                               onClick={() => removeShare(share.id)}
                               icon={<DeleteOutlined />}
+                              loading={isLoading}
                             ></Button>
                           </div>
                         </div>
@@ -232,8 +236,9 @@ const NoteDetail = () => {
                           : "Unknown date"}
                       </p>
                       <Button
-                        style={{ backgroundColor: "black", color: "white" }}
+                        style={{ backgroundColor: isLoading ? "#d9d9d9" : "black", color: "white" }}
                         onClick={() => restore(v.id)}
+                        loading={isLoading}
                       >
                         Restore
                       </Button>
@@ -248,11 +253,12 @@ const NoteDetail = () => {
         <div className="fixed bottom-6 right-6 flex flex-col gap-3">
           {!isReadOnly && (
             <Button
-              style={{ backgroundColor: "black", color: "white" }}
+              style={{ backgroundColor: isLoading ? "#d9d9d9" : "black", color: "white" }}
               shape="circle"
               size="large"
               icon={<EditOutlined />}
               onClick={handleOpenEditModal}
+              disabled={isLoading}
             />
           )}
 
@@ -263,6 +269,7 @@ const NoteDetail = () => {
               size="large"
               icon={<DeleteOutlined />}
               onClick={() => handleDeleteNote()}
+              loading={isLoading}
             />
           )}
         </div>

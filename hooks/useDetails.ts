@@ -26,6 +26,7 @@ export const useDetails = (id: string) => {
 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [versions, setVersions] = useState<NoteVersion[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const checkUser = async () => {
     const { data } = await supabase.auth.getUser();
@@ -48,12 +49,15 @@ export const useDetails = (id: string) => {
 
   const restore = async (version_id: string) => {
     try {
+      setIsLoading(true);
       await api.post("restor-version", { version_id: version_id });
-      fetchSingleNote(id);
-      fetchVersion();
+      await fetchSingleNote(id);
+      await fetchVersion();
       message.success("Version restored successfully");
     } catch (error) {
       message.error("Failed to restore version");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -67,6 +71,7 @@ export const useDetails = (id: string) => {
       setNote(res.data);
     } catch (error) {
       message.error("Failed to fetch");
+      router.replace("/");
     }
   };
 
@@ -129,8 +134,9 @@ export const useDetails = (id: string) => {
     }
   }, [id]);
 
-  const handleDeleteNote = () => {
-    deleteNote(id);
+  const handleDeleteNote = async () => {
+    setIsLoading(true);
+    await deleteNote(id);
     router.replace("/");
   };
 
@@ -138,10 +144,12 @@ export const useDetails = (id: string) => {
     updatedTitle: string,
     updatedContent: string,
   ) => {
+    setIsLoading(true);
     await editNote(id, updatedTitle, updatedContent);
-    fetchSingleNote(id);
-    fetchVersion();
+    await fetchSingleNote(id);
+    await fetchVersion();
     setEditOpen(false);
+    setIsLoading(false);
   };
 
   const handleOpenEditModal = () => {
@@ -150,22 +158,28 @@ export const useDetails = (id: string) => {
 
   const updateShare = async (share_id: string, permission: string) => {
     try {
+      setIsLoading(true);
       await api.post("update-share", { share_id, permission });
+      message.success("Permission updated");
+      await fetchSharedUsers();
     } catch (error) {
       message.error("Failed to update");
+    } finally {
+      setIsLoading(false);
     }
-    message.success("Permission updated");
-    fetchSharedUsers();
   };
 
   const removeShare = async (share_id: string) => {
     try {
+      setIsLoading(true);
       await api.post("remove-share", { share_id });
+      message.success("Remove user access from note");
+      await fetchSharedUsers();
     } catch (error) {
       message.error("Failed to remove");
+    } finally {
+      setIsLoading(false);
     }
-    message.success("Remove user access from note");
-    fetchSharedUsers();
   };
 
   return {
@@ -185,5 +199,6 @@ export const useDetails = (id: string) => {
     removeShare,
     restore,
     fetchSharedUsers,
+    isLoading,
   };
 };

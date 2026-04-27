@@ -5,6 +5,7 @@ interface EditModalProps {
   editOpen: boolean;
   initialTitle: string;
   initialContent: string;
+  isLoading?: boolean;
   onCancel: () => void;
   onOk: (title: string, content: string) => void;
 }
@@ -13,6 +14,7 @@ export function EditNoteModal({
   editOpen,
   initialTitle,
   initialContent,
+  isLoading = false,
   onCancel,
   onOk,
 }: EditModalProps) {
@@ -33,11 +35,13 @@ export function EditNoteModal({
       onCancel={onCancel}
       onOk={() => onOk(title, content)}
       okText="Update"
+      confirmLoading={isLoading}
       cancelButtonProps={{
         style: { background: "black", borderColor: "black", color: "white" },
+        disabled: isLoading,
       }}
       okButtonProps={{
-        style: { background: "black", borderColor: "black", color: "white" },
+        style: { background: isLoading ? "#d9d9d9" : "black", borderColor: isLoading ? "#d9d9d9" : "black", color: "white" },
       }}
     >
       <Input

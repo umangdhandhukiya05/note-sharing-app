@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import { PlusOutlined, LogoutOutlined } from "@ant-design/icons";
 import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -41,24 +41,29 @@ export function DashboardHeader({ onOpenModal }: DashboardHeaderProps) {
   };
 
   return (
-    <div className="px-6 flex justify-between mb-5 items-center bg-black text-white">
+    <div className="px-4 py-3 md:px-6 md:py-4 flex justify-between mb-5 items-center bg-black text-white">
       <div className="flex flex-col">
-        <h2 className="logo">Shared-Notes</h2>
-        <span className="text-lg font-semibold">
+        <h2 className="logo m-0 text-lg md:text-xl">S-Notes</h2>
+        <span className="text-sm md:text-lg font-semibold mt-1">
           Welcome,{" "}
           <span>{username.toUpperCase()} !</span>
         </span>
       </div>
 
-      <div className="flex gap-4 items-center">
-        <Button onClick={handleLogout}>Logout</Button>
+      <div className="flex gap-2 md:gap-4 items-center">
+        <Button onClick={handleLogout} className="flex items-center" title="Logout">
+          <LogoutOutlined />
+          <span className="hidden md:inline">Logout</span>
+        </Button>
 
         <Button
           style={{ backgroundColor: "white", color: "black" }}
-          icon={<PlusOutlined />}
           onClick={onOpenModal}
+          className="flex items-center"
+          title="New Note"
         >
-          New Note
+          <PlusOutlined />
+          <span className="hidden md:inline">New Note</span>
         </Button>
       </div>
     </div>

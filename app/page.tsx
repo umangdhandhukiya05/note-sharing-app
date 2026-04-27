@@ -25,19 +25,6 @@ export default function Dashboard() {
 
   useEffect(() => {
     checkUser();
-    const channel = supabase
-      .channel("public:notes-dashboard")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "notes" },
-        (payload) => {
-          fetchNotes();
-        },
-      )
-      .subscribe();
-    return () => {
-      supabase.removeChannel(channel);
-    };
   }, []);
 
   const checkUser = async () => {

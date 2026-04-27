@@ -8,25 +8,7 @@ export const useNotes = () => {
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(false);
 
-  //realtime
-  useEffect(() => {
-    const channel = supabase
-      .channel("public:notes")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "notes" },
-        (payload) => {
-          fetchNotes();
-        },
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
-
-  const fetchNotes = useCallback(async () => {
+    const fetchNotes = useCallback(async () => {
     setLoading(true);
 
     try {
@@ -40,6 +22,36 @@ export const useNotes = () => {
     }
     setLoading(false);
   }, []);
+
+  //realtime
+  useEffect(() => {
+    const channel = supabase
+      .channel("public:notes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "notes" },
+        (payload) => {
+          fetchNotes();
+        },
+      )
+      .subscribe();
+
+    const shareChannel = supabase
+      .channel("public:note_shares")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "note_shares" },
+        (payload) => {
+          fetchNotes();
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+      supabase.removeChannel(shareChannel);
+    };
+  }, [fetchNotes]);
 
   const createNote = async (
     title: string,
