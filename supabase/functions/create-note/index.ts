@@ -32,7 +32,7 @@ serve(async (req) => {
     return withCors(req, { status: 401 }, "Unauthorized");
   }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("notes")
     .insert({
       title: title || "Untitled",
@@ -46,5 +46,12 @@ serve(async (req) => {
     return withCors(req, { status: 400 }, error.message);
   }
 
-  return withCors(req, { status: 200 }, "Note created");
+  return withCors(
+    req,
+    { status: 200 },
+    JSON.stringify({
+      message: "Note created",
+      data,
+    }),
+  );
 });
