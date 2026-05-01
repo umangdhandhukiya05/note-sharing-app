@@ -39,7 +39,7 @@ serve(async (req) => {
       content: content || "",
       owner_id: userData.user.id,
     })
-    .select()
+    .select("*")
     .single();
 
   if (error) {
