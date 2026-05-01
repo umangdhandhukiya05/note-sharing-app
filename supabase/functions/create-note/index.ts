@@ -32,11 +32,15 @@ serve(async (req) => {
     return withCors(req, { status: 401 }, "Unauthorized");
   }
 
-  const { error } = await supabase.from("notes").insert({
-    title: title || "Untitled",
-    content: content || "",
-    owner_id: userData.user.id,
-  });
+  const { error } = await supabase
+    .from("notes")
+    .insert({
+      title: title || "Untitled",
+      content: content || "",
+      owner_id: userData.user.id,
+    })
+    .select()
+    .single();
 
   if (error) {
     return withCors(req, { status: 400 }, error.message);
